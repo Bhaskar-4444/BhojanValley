@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BhojanValley Restaurant</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .slider {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            overflow: hidden;
+        }
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .slide.active {
+            display: block;
+        }
+        .slider-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+        .slider-controls button {
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .slider-controls button:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+        .menu-item {
+            display: none;
+        }
+        .menu-item.active {
+            display: block;
+        }
+        .menu-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .quantity-controls button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .quantity-controls button:hover {
+            background: #059669;
+        }
+        .order-summary {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .order-summary button {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .order-summary button:hover {
+            background: #059669;
+        }
+        /* Mobile-specific styles for menu items */
+        @media (max-width: 640px) {
+            .menu-item {
+                padding: 0.75rem; /* Reduced padding */
+            }
+            .menu-img {
+                width: 60px; /* Smaller image */
+                height: 60px;
+            }
+            .menu-item h3 {
+                font-size: 0.9rem; /* Smaller title */
+            }
+            .menu-item p {
+                font-size: 0.75rem; /* Smaller description and price */
+            }
+            .quantity-controls {
+                gap: 5px;
+                margin-top: 5px;
+            }
+            .quantity-controls button {
+                padding: 3px 8px;
+                font-size: 0.75rem;
+            }
+            .quantity-controls span {
+                font-size: 0.75rem;
+            }
+            .menu-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columns on mobile */
+                gap: 0.5rem; /* Reduced gap */
+            }
+        }
+    </style>
+</head>
+<body class="bg-green-100">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-green-600 to-teal-500 text-white py-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <h1 class="text-3xl font-bold">BhojanValley</h1>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#home" class="hover:text-yellow-300">Home</a></li>
+                    <li><a href="#about" class="hover:text-yellow-300">About</a></li>
+                    <li><a href="#menu" class="hover:text-yellow-300">Menu</a></li>
+                    <li><a href="#contact" class="hover:text-yellow-300">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section with Slider -->
+    <section id="home" class="slider">
+        <img src="https://images.pexels.com/photos/2297961/pexels-photo-2297961.jpeg?auto=compress&cs=tinysrgb&w=2070" alt="Restaurant Interior" class="slide active">
+        <img src="https://images.pexels.com/photos/260922/pexels-photo-260922.jpeg?auto=compress&cs=tinysrgb&w=2070" alt="Dining Area" class="slide">
+        <img src="https://images.pexels.com/photos/1055058/pexels-photo-1055058.jpeg?auto=compress&cs=tinysrgb&w=2070" alt="Outdoor Seating" class="slide">
+        <img src="https://images.pexels.com/photos/941861/pexels-photo-941861.jpeg?auto=compress&cs=tinysrgb&w=2070" alt="Indian Cuisine" class="slide">
+        <img src="https://images.pexels.com/photos/674574/pexels-photo-674574.jpeg?auto=compress&cs=tinysrgb&w=2070" alt="Restaurant Ambiance" class="slide">
+        <img src="https://images.pexels.com/photos/3184192/pexels-photo-3184192.jpeg?auto=compress&cs=tinysrgb&w=2070" alt="Food Presentation" class="slide">
+        <img src="https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=2070" alt="Cozy Dining" class="slide">
+        <img src="https://images.pexels.com/photos/1581559/pexels-photo-1581559.jpeg?auto=compress&cs=tinysrgb&w=2070" alt="Chef Special" class="slide">
+        <div class="slider-controls">
+            <button onclick="prevSlide()">← Prev</button>
+            <button onclick="nextSlide()">Next →</button>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-semibold text-green-700 mb-6 text-center">About BhojanValley</h2>
+            <p class="text-lg text-gray-700 max-w-3xl mx-auto">
+                Welcome to BhojanValley, where nature meets flavor! Nestled in the heart of greenery, we offer authentic dishes crafted with fresh, organic ingredients. Our vibrant ambiance and warm hospitality make every meal a delightful experience.
+            </p>
+        </div>
+    </section>
+
+    <!-- Menu Section -->
+    <section id="menu" class="py-16 bg-green-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-semibold text-green-700 mb-6 text-center">Our Menu</h2>
+            <div class="mb-6 text-center">
+                <select id="menu-filter" onchange="filterMenu()" class="p-2 border border-green-600 rounded-md">
+                    <option value="all">All</option>
+                    <option value="veg">Veg</option>
+                    <option value="nonveg">Non-Veg</option>
+                    <option value="fastfood">Fast Food</option>
+                </select>
+            </div>
+            <div class="menu-grid grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Veg Items -->
+                <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="250" data-name="Paneer Butter Masala">
+                    <img src="https://images.pexels.com/photos/2347311/pexels-photo-2347311.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Paneer Butter Masala" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Paneer Butter Masala</h3>
+                    <p class="text-gray-600">Creamy paneer in rich tomato and butter gravy.</p>
+                    <p class="text-green-600 font-semibold">₹250</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('paneer-butter-masala')">-</button>
+                        <span id="paneer-butter-masala-quantity">0</span>
+                        <button onclick="increaseQuantity('paneer-butter-masala')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="180" data-name="Dal Tadka">
+                    <img src="https://images.pexels.com/photos/13915095/pexels-photo-13915095.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Dal Tadka" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Dal Tadka</h3>
+                    <p class="text-gray-600">Yellow lentils tempered with cumin and spices.</p>
+                    <p class="text-green-600 font-semibold">₹180</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('dal-tadka')">-</button>
+                        <span id="dal-tadka-quantity">0</span>
+                        <button onclick="increaseQuantity('dal-tadka')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="200" data-name="Aloo Gobi">
+                    <img src="https://images.pexels.com/photos/16911223/pexels-photo-16911223.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Aloo Gobi" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Aloo Gobi</h3>
+                    <p class="text-gray-600">Potatoes and cauliflower cooked with spices.</p>
+                    <p class="text-green-600 font-semibold">₹200</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('aloo-gobi')">-</button>
+                        <span id="aloo-gobi-quantity">0</span>
+                        <button onclick="increaseQuantity('aloo-gobi')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="220" data-name="Malai Kofta">
+                    <img src="https://images.pexels.com/photos/13915094/pexels-photo-13915094.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Malai Kofta" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Malai Kofta</h3>
+                    <p class="text-gray-600">Soft paneer balls in creamy cashew gravy.</p>
+                    <p class="text-green-600 font-semibold">₹220</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('malai-kofta')">-</button>
+                        <span id="malai-kofta-quantity">0</span>
+                        <button onclick="increaseQuantity('malai-kofta')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="150" data-name="Chole Bhature">
+                    <img src="https://images.pexels.com/photos/2474658/pexels-photo-2474658.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Chole Bhature" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Chole Bhature</h3>
+                    <p class="text-gray-600">Spicy chickpeas with fluffy fried bread.</p>
+                    <p class="text-green-600 font-semibold">₹150</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('chole-bhature')">-</button>
+                        <span id="chole-bhature-quantity">0</span>
+                        <button onclick="increaseQuantity('chole-bhature')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="120" data-name="Dosa">
+                    <img src="https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Dosa" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Dosa</h3>
+                    <p class="text-gray-600">Crispy rice pancake served with sambar and chutney.</p>
+                    <p class="text-green-600 font-semibold">₹120</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('dosa')">-</button>
+                        <span id="dosa-quantity">0</span>
+                        <button onclick="increaseQuantity('dosa')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="140" data-name="Vegetable Biryani">
+                    <img src="https://images.pexels.com/photos/12737919/pexels-photo-12737919.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Vegetable Biryani" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Vegetable Biryani</h3>
+                    <p class="text-gray-600">Aromatic rice with mixed vegetables and spices.</p>
+                    <p class="text-green-600 font-semibold">₹140</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('vegetable-biryani')">-</button>
+                        <span id="vegetable-biryani-quantity">0</span>
+                        <button onclick="increaseQuantity('vegetable-biryani')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="200" data-name="Palak Paneer">
+                    <img src="https://images.pexels.com/photos/2474661/pexels-photo-2474661.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Palak Paneer" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Palak Paneer</h3>
+                    <p class="text-gray-600">Paneer cubes in creamy spinach gravy.</p>
+                    <p class="text-green-600 font-semibold">₹200</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('palak-paneer')">-</button>
+                        <span id="palak-paneer-quantity">0</span>
+                        <button onclick="increaseQuantity('palak-paneer')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="160" data-name="Rajma Masala">
+                    <img src="https://images.pexels.com/photos/13915093/pexels-photo-13915093.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Rajma Masala" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Rajma Masala</h3>
+                    <p class="text-gray-600">Kidney beans in a spicy tomato gravy.</p>
+                    <p class="text-green-600 font-semibold">₹160</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('rajma-masala')">-</button>
+                        <span id="rajma-masala-quantity">0</span>
+                        <button onclick="increaseQuantity('rajma-masala')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="130" data-name="Idli Sambar">
+                    <img src="https://images.pexels.com/photos/7262480/pexels-photo-7262480.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Idli Sambar" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Idli Sambar</h3>
+                    <p class="text-gray-600">Steamed rice cakes with lentil soup and chutney.</p>
+                    <p class="text-green-600 font-semibold">₹130</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('idli-sambar')">-</button>
+                        <span id="idli-sambar-quantity">0</span>
+                        <button onclick="increaseQuantity('idli-sambar')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="170" data-name="Mushroom Masala">
+                    <img src="https://images.pexels.com/photos/5522016/pexels-photo-5522016.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Mushroom Masala" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Mushroom Masala</h3>
+                    <p class="text-gray-600">Mushrooms cooked in spicy onion-tomato gravy.</p>
+                    <p class="text-green-600 font-semibold">₹170</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('mushroom-masala')">-</button>
+                        <span id="mushroom-masala-quantity">0</span>
+                        <button onclick="increaseQuantity('mushroom-masala')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="200" data-name="Veg Fried Rice">
+                    <img src="https://images.pexels.com/photos/723198/pexels-photo-723198.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Veg Fried Rice" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Veg Fried Rice</h3>
+                    <p class="text-gray-600">Fluffy rice tossed with vegetables and soy sauce.</p>
+                    <p class="text-green-600 font-semibold">₹200</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('veg-fried-rice')">-</button>
+                        <span id="veg-fried-rice-quantity">0</span>
+                        <button onclick="increaseQuantity('veg-fried-rice')">+</button>
+                    </div>
+                </div>
+                <!-- Non-Veg Items -->
+                <div class="menu-item nonveg active bg-white p-6 rounded-lg shadow-md" data-price="300" data-name="Chicken Biryani">
+                    <img src="https://images.pexels.com/photos/12737919/pexels-photo-12737919.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Chicken Biryani" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Chicken Biryani</h3>
+                    <p class="text-gray-600">Aromatic basmati rice with tender chicken and spices.</p>
+                    <p class="text-green-600 font-semibold">₹300</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('chicken-biryani')">-</button>
+                        <span id="chicken-biryani-quantity">0</span>
+                        <button onclick="increaseQuantity('chicken-biryani')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item nonveg active bg-white p-6 rounded-lg shadow-md" data-price="280" data-name="Chicken Manchurian">
+                    <img src="https://images.pexels.com/photos/723199/pexels-photo-723199.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Chicken Manchurian" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Chicken Manchurian</h3>
+                    <p class="text-gray-600">Chicken in a tangy soy-based sauce with veggies.</p>
+                    <p class="text-green-600 font-semibold">₹280</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('chicken-manchurian')">-</button>
+                        <span id="chicken-manchurian-quantity">0</span>
+                        <button onclick="increaseQuantity('chicken-manchurian')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item nonveg active bg-white p-6 rounded-lg shadow-md" data-price="260" data-name="Chilli Chicken">
+                    <img src="https://images.pexels.com/photos/723200/pexels-photo-723200.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Chilli Chicken" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Chilli Chicken</h3>
+                    <p class="text-gray-600">Spicy chicken stir-fry with bell peppers and onions.</p>
+                    <p class="text-green-600 font-semibold">₹260</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('chilli-chicken')">-</button>
+                        <span id="chilli-chicken-quantity">0</span>
+                        <button onclick="increaseQuantity('chilli-chicken')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item nonveg active bg-white p-6 rounded-lg shadow-md" data-price="320" data-name="Butter Chicken">
+                    <img src="https://images.pexels.com/photos/2347312/pexels-photo-2347312.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Butter Chicken" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Butter Chicken</h3>
+                    <p class="text-gray-600">Tender chicken in creamy tomato and butter sauce.</p>
+                    <p class="text-green-600 font-semibold">₹320</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('butter-chicken')">-</button>
+                        <span id="butter-chicken-quantity">0</span>
+                        <button onclick="increaseQuantity('butter-chicken')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item nonveg active bg-white p-6 rounded-lg shadow-md" data-price="350" data-name="Mutton Rogan Josh">
+                    <img src="https://images.pexels.com/photos/6419708/pexels-photo-6419708.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Mutton Rogan Josh" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Mutton Rogan Josh</h3>
+                    <p class="text-gray-600">Slow-cooked mutton in aromatic Kashmiri spices.</p>
+                    <p class="text-green-600 font-semibold">₹350</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('mutton-rogan-josh')">-</button>
+                        <span id="mutton-rogan-josh-quantity">0</span>
+                        <button onclick="increaseQuantity('mutton-rogan-josh')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item nonveg active bg-white p-6 rounded-lg shadow-md" data-price="280" data-name="Fish Curry">
+                    <img src="https://images.pexels.com/photos/4105287/pexels-photo-4105287.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Fish Curry" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Fish Curry</h3>
+                    <p class="text-gray-600">Fresh fish in spicy coconut-based curry.</p>
+                    <p class="text-green-600 font-semibold">₹280</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('fish-curry')">-</button>
+                        <span id="fish-curry-quantity">0</span>
+                        <button onclick="increaseQuantity('fish-curry')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item nonveg active bg-white p-6 rounded-lg shadow-md" data-price="300" data-name="Chicken Tikka">
+                    <img src="https://images.pexels.com/photos/2474660/pexels-photo-2474660.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Chicken Tikka" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Chicken Tikka</h3>
+                    <p class="text-gray-600">Marinated chicken grilled in tandoor.</p>
+                    <p class="text-green-600 font-semibold">₹300</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('chicken-tikka')">-</button>
+                        <span id="chicken-tikka-quantity">0</span>
+                        <button onclick="increaseQuantity('chicken-tikka')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item nonveg active bg-white p-6 rounded-lg shadow-md" data-price="340" data-name="Prawn Masala">
+                    <img src="https://images.pexels.com/photos/4105288/pexels-photo-4105288.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Prawn Masala" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Prawn Masala</h3>
+                    <p class="text-gray-600">Juicy prawns cooked in spicy onion-tomato masala.</p>
+                    <p class="text-green-600 font-semibold">₹340</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('prawn-masala')">-</button>
+                        <span id="prawn-masala-quantity">0</span>
+                        <button onclick="increaseQuantity('prawn-masala')">+</button>
+                    </div>
+                </div>
+                <!-- Fast Food Items -->
+                <div class="menu-item fastfood active bg-white p-6 rounded-lg shadow-md" data-price="150" data-name="Veg Burger">
+                    <img src="https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Veg Burger" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Veg Burger</h3>
+                    <p class="text-gray-600">Crispy veggie patty with fresh lettuce and sauce.</p>
+                    <p class="text-green-600 font-semibold">₹150</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('veg-burger')">-</button>
+                        <span id="veg-burger-quantity">0</span>
+                        <button onclick="increaseQuantity('veg-burger')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item fastfood active bg-white p-6 rounded-lg shadow-md" data-price="180" data-name="Chicken Burger">
+                    <img src="https://images.pexels.com/photos/1639562/pexels-photo-1639562.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Chicken Burger" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">Chicken Burger</h3>
+                    <p class="text-gray-600">Grilled chicken patty with mayo and veggies.</p>
+                    <p class="text-green-600 font-semibold">₹180</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('chicken-burger')">-</button>
+                        <span id="chicken-burger-quantity">0</span>
+                        <button onclick="increaseQuantity('chicken-burger')">+</button>
+                    </div>
+                </div>
+                <div class="menu-item fastfood active bg-white p-6 rounded-lg shadow-md" data-price="120" data-name="French Fries">
+                    <img src="https://images.pexels.com/photos/1583884/pexels-photo-1583884.jpeg?auto=compress&cs=tinysrgb&w=500" alt="French Fries" class="menu-img">
+                    <h3 class="text-xl font-bold text-teal-600">French Fries</h3>
+                    <p class="text-gray-600">Crispy golden fries with a sprinkle of salt.</p>
+                    <p class="text-green-600 font-semibold">₹120</p>
+                    <div class="quantity-controls">
+                        <button onclick="decreaseQuantity('french-fries')">-</button>
+                        <span id="french-fries-quantity">0</span>
+                        <button onclick="increaseQuantity('french-fries')">+</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h3 class="text-xl font-bold text-teal-600 mb-4">Order Summary</h3>
+                <div id="order-details"></div>
+                <p class="text-lg font-semibold text-green-600 mt-4">Total: ₹<span id="order-total">0</span></p>
+                <button onclick="placeOrder()">Place Order</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-semibold text-green-700 mb-6 text-center">Contact Us</h2>
+            <div class="text-center">
+                <p class="text-gray-700">📍 123 Green Valley, Food City, India</p>
+                <p class="text-gray-700">📞 +91 123 456 7890</p>
+                <p class="text-gray-700">✉️ contact@bhojanvalley.com</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gradient-to-r from-green-600 to-teal-500 text-white py-4">
+        <div class="container mx-auto text-center">
+            <p>© 2025 BhojanValley. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Helper function to capitalize words for matching data-name
+        function toTitleCase(str) {
+            return str
+                .replace(/-/g, ' ')
+                .toLowerCase()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+
+        // Slider Functionality
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === index) {
+                    slide.classList.add('active');
+                }
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        // Auto-slide every 5 seconds
+        setInterval(nextSlide, 5000);
+
+        // Menu Filter Functionality
+        function filterMenu() {
+            const filter = document.getElementById('menu-filter').value;
+            const menuItems = document.querySelectorAll('.menu-item');
+
+            menuItems.forEach(item => {
+                item.classList.remove('active');
+                if (filter === 'all' || item.classList.contains(filter)) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        // Quantity Controls and Order Summary
+        const order = {};
+
+        function updateOrderSummary() {
+            const orderDetails = document.getElementById('order-details');
+            const orderTotal = document.getElementById('order-total');
+            let total = 0;
+            let detailsHTML = '';
+
+            for (const itemId in order) {
+                if (order[itemId] > 0) {
+                    const formattedName = toTitleCase(itemId);
+                    const itemElement = document.querySelector(`.menu-item[data-name="${formattedName}"]`);
+                    if (itemElement) {
+                        const itemName = itemElement.getAttribute('data-name');
+                        const itemPrice = parseInt(itemElement.getAttribute('data-price'));
+                        const quantity = order[itemId];
+                        const itemTotal = itemPrice * quantity;
+                        total += itemTotal;
+                        detailsHTML += `<p>${itemName}: ${quantity} x ₹${itemPrice} = ₹${itemTotal}</p>`;
+                    } else {
+                        console.error(`Item not found: ${formattedName}`);
+                    }
+                }
+            }
+
+            orderDetails.innerHTML = detailsHTML || '<p>No items selected.</p>';
+            orderTotal.textContent = total;
+        }
+
+        function increaseQuantity(itemId) {
+            if (!order[itemId]) order[itemId] = 0;
+            order[itemId]++;
+            document.getElementById(`${itemId}-quantity`).textContent = order[itemId];
+            updateOrderSummary();
+        }
+
+        function decreaseQuantity(itemId) {
+            if (!order[itemId] || order[itemId] <= 0) return;
+            order[itemId]--;
+            document.getElementById(`${itemId}-quantity`).textContent = order[itemId];
+            updateOrderSummary();
+        }
+
+        function placeOrder() {
+            if (Object.values(order).every(quantity => quantity === 0)) {
+                alert('Please select at least one item to place an order.');
+                return;
+            }
+
+            // Prepare order data
+            const orderItems = [];
+            let total = 0;
+            for (const itemId in order) {
+                if (order[itemId] > 0) {
+                    const formattedName = toTitleCase(itemId);
+                    const itemElement = document.querySelector(`.menu-item[data-name="${formattedName}"]`);
+                    if (itemElement) {
+                        const itemName = itemElement.getAttribute('data-name');
+                        const itemPrice = parseInt(itemElement.getAttribute('data-price'));
+                        const quantity = order[itemId];
+                        const itemTotal = itemPrice * quantity;
+                        total += itemTotal;
+                        orderItems.push({ name: itemName, quantity, price: itemPrice, total: itemTotal });
+                    }
+                }
+            }
+
+            // Create order object
+            const orderData = {
+                id: Date.now(), // Unique ID based on timestamp
+                timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+                items: orderItems,
+                total: total,
+                status: 'Pending'
+            };
+
+            // Save to localStorage
+            const orders = JSON.parse(localStorage.getItem('bhojanValleyOrders') || '[]');
+            orders.push(orderData);
+            localStorage.setItem('bhojanValleyOrders', JSON.stringify(orders));
+
+            // Show confirmation
+            alert('Order placed successfully! Thank you for choosing BhojanValley.');
+
+            // Reset order
+            for (const itemId in order) {
+                order[itemId] = 0;
+                document.getElementById(`${itemId}-quantity`).textContent = 0;
+            }
+            updateOrderSummary();
+        }
+    </script>
+</body>
+</html>
