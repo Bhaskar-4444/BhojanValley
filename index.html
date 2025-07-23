@@ -126,6 +126,29 @@
         }
     </style>
 </head>
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyBuj-Dwtjce7QK8dxSLQ5eK2uJPbktCMVs",
+    authDomain: "bhojanvalley.firebaseapp.com",
+    projectId: "bhojanvalley",
+    storageBucket: "bhojanvalley.firebasestorage.app",
+    messagingSenderId: "115502050289",
+    appId: "1:115502050289:web:7d76ddcaed3979510bf250",
+    measurementId: "G-5TQE5KC39L"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 <body class="bg-green-100">
     <!-- Header -->
     <header class="bg-gradient-to-r from-green-600 to-teal-500 text-white py-4 shadow-lg">
