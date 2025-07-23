@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Customer Panel</title>
+
+  <!-- ✅ Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBOTc7OvOA6LUmnHzskMVeOJWhOMk_iY3Y",
+      authDomain: "bhojan-valley.firebaseapp.com",
+      databaseURL: "https://bhojan-valley-default-rtdb.firebaseio.com",
+      projectId: "bhojan-valley",
+      storageBucket: "bhojan-valley.firebasestorage.app",
+      messagingSenderId: "1036589667387",
+      appId: "1:1036589667387:web:9caeb9f9d629d89ca0f81e",
+      measurementId: "G-SWYLKYY511"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  </script>
+</head>
+<body>
+  <h2>Customer Panel</h2>
+
+  <input type="text" id="orderId" placeholder="Enter Order ID" />
+  <button onclick="checkStatus()">Check Status</button>
+
+  <p id="result"></p>
+
+  <script>
+    function checkStatus() {
+      const orderId = document.getElementById('orderId').value;
+      const statusRef = firebase.database().ref('orders/' + orderId);
+
+      statusRef.get().then((snapshot) => {
+        if (snapshot.exists()) {
+          const status = snapshot.val().status;
+          document.getElementById('result').innerText = "Order Status: " + status;
+        } else {
+          document.getElementById('result').innerText = "No such order found.";
+        }
+      }).catch((error) => {
+        document.getElementById('result').innerText = "Error: " + error;
+      });
+    }
+  </script>
+</body>
+</html>
