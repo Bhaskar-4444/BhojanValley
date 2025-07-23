@@ -25,27 +25,68 @@
   </script>
 </head>
 <body>
-  <h2>Customer Panel</h2>
+  <h2>🍽️ Customer Panel - Place Your Order</h2>
 
-  <input type="text" id="orderId" placeholder="Enter Order ID" />
+  <input type="text" id="item" placeholder="Item (e.g. Pizza)" /><br><br>
+  <input type="number" id="qty" placeholder="Quantity" /><br><br>
+  <input type="text" id="table" placeholder="Table Number" /><br><br>
+  <button onclick="placeOrder()">Place Order</button>
+
+  <p id="orderResult"></p>
+  <hr>
+
+  <h3>🔍 Check Your Order Status</h3>
+  <input type="text" id="trackOrderId" placeholder="Enter Order ID" />
   <button onclick="checkStatus()">Check Status</button>
 
-  <p id="result"></p>
+  <p id="statusResult"></p>
 
   <script>
+    function placeOrder() {
+      const item = document.getElementById('item').value;
+      const qty = document.getElementById('qty').value;
+      const table = document.getElementById('table').value;
+      const time = new Date().toLocaleTimeString();
+
+      if (item === "" || qty === "" || table === "") {
+        alert("Please fill all fields!");
+        return;
+      }
+
+      const newOrderRef = db.ref('orders').push();
+      const orderId = newOrderRef.key;
+
+      newOrderRef.set({
+        item: item,
+        qty: qty,
+        table: table,
+        time: time,
+        status: "Pending"
+      }).then(() => {
+        document.getElementById('orderResult').innerText =
+          `✅ Order placed successfully!\n🆔 Your Order ID: ${orderId}`;
+        document.getElementById('item').value = "";
+        document.getElementById('qty').value = "";
+        document.getElementById('table').value = "";
+      }).catch((error) => {
+        document.getElementById('orderResult').innerText = "❌ Error: " + error;
+      });
+    }
+
     function checkStatus() {
-      const orderId = document.getElementById('orderId').value;
-      const statusRef = firebase.database().ref('orders/' + orderId);
+      const orderId = document.getElementById('trackOrderId').value;
+      const statusRef = db.ref('orders/' + orderId);
 
       statusRef.get().then((snapshot) => {
         if (snapshot.exists()) {
-          const status = snapshot.val().status;
-          document.getElementById('result').innerText = "Order Status: " + status;
+          const order = snapshot.val();
+          document.getElementById('statusResult').innerText =
+            `🍽️ Item: ${order.item}\n📦 Quantity: ${order.qty}\n📍 Table: ${order.table}\n⏰ Time: ${order.time}\n🚚 Status: ${order.status}`;
         } else {
-          document.getElementById('result').innerText = "No such order found.";
+          document.getElementById('statusResult').innerText = "❌ No such order found.";
         }
       }).catch((error) => {
-        document.getElementById('result').innerText = "Error: " + error;
+        document.getElementById('statusResult').innerText = "⚠️ Error: " + error;
       });
     }
   </script>
