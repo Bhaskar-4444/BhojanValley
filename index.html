@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Firebase App (core) -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-<!-- Firebase Realtime Database -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BhojanValley Restaurant</title>
@@ -130,30 +125,6 @@
             }
         }
     </style>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyDEO4lgBPbqm2au8jn42ZK-qQVehtcPNmg",
-    authDomain: "bhojanvalley-ce400.firebaseapp.com",
-    projectId: "bhojanvalley-ce400",
-    storageBucket: "bhojanvalley-ce400.firebasestorage.app",
-    messagingSenderId: "834947885728",
-    appId: "1:834947885728:web:5b1f562dd0bc04f1cab7c5",
-    measurementId: "G-4PTSESNV53",
-https://bhojanvalley-ce400-default-rtdb.firebaseio.com/
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
 </head>
 <body class="bg-green-100">
     <!-- Header -->
@@ -482,7 +453,7 @@ https://bhojanvalley-ce400-default-rtdb.firebaseio.com/
         <div class="container mx-auto px-4">
             <h2 class="text-3xl font-semibold text-green-700 mb-6 text-center">Contact Us</h2>
             <div class="text-center">
-                <p class="text-gray-700">📍Gurugram, 123 Cybercity ,Bhojan Valley, Food City, India</p>
+                <p class="text-gray-700">📍 123 Cybercity Bhojan Valley, Food City, India</p>
                 <p class="text-gray-700">📞 +91 9508331748</p>
                 <p class="text-gray-700">✉️ contact@bhojanvalley.com</p>
             </div>
@@ -594,32 +565,8 @@ https://bhojanvalley-ce400-default-rtdb.firebaseio.com/
 
         function placeOrder() {
             if (Object.values(order).every(quantity => quantity === 0)) {
-               function placeOrder() {
-    if (cart.length === 0) {
-        alert('Your cart is empty!');
-        return;
-    }
-
-    const orderData = {
-        items: cart,
-        totalPrice: calculateTotal(),
-        timestamp: new Date().toISOString()
-    };
-
-    // Push to Firebase
-    const newOrderRef = firebase.database().ref('orders').push();
-    newOrderRef.set(orderData)
-        .then(() => {
-            alert('Order placed successfully!');
-            cart = [];
-            updateCart();
-        })
-        .catch((error) => {
-            console.error('Error placing order:', error);
-            alert('Failed to place order. Try again.');
-        });
-}
-
+                alert('Please select at least one item to place an order.');
+                return;
             }
 
             // Prepare order data
@@ -649,7 +596,11 @@ https://bhojanvalley-ce400-default-rtdb.firebaseio.com/
                 status: 'Pending'
             };
 
-            
+            // Save to localStorage
+            const orders = JSON.parse(localStorage.getItem('bhojanValleyOrders') || '[]');
+            orders.push(orderData);
+            localStorage.setItem('bhojanValleyOrders', JSON.stringify(orders));
+
             // Show confirmation
             alert('Order placed successfully! Thank you for choosing BhojanValley.');
 
