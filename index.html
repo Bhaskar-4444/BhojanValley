@@ -827,7 +827,27 @@ window.handleAuth = function() {
                             order[itemId] = 0;
                             document.getElementById(`${itemId}-quantity`).textContent = 0;
                         }
-                        updateOrderSummary();
+                        addDoc(collection(db, 'orders'), orderData)
+    .then(() => {
+        alert('Order placed successfully! Thank you for choosing BhojanValley.');
+
+        // Reset item quantities in the order object
+        for (const itemId in order) {
+            order[itemId] = 0;
+            const quantitySpan = document.getElementById(`${itemId}-quantity`);
+            if (quantitySpan) {
+                quantitySpan.textContent = '0';
+            }
+        }
+
+        // Clear order summary manually
+        document.getElementById('order-details').innerHTML = '<p>No items selected.</p>';
+        document.getElementById('order-total').textContent = '0';
+    })
+    .catch(error => {
+        alert('Error placing order: ' + error.message);
+    });
+
                     })
                     .catch(error => {
                         alert('Error placing order: ' + error.message);
