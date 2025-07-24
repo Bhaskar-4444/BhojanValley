@@ -823,10 +823,6 @@ window.handleAuth = function() {
                     .then(() => {
                         alert('Order placed successfully! Thank you for choosing BhojanValley.');
                         // Reset order
-                        for (const itemId in order) {
-                            order[itemId] = 0;
-                            document.getElementById(`${itemId}-quantity`).textContent = 0;
-                        }
                         addDoc(collection(db, 'orders'), orderData)
     .then(() => {
         alert('Order placed successfully! Thank you for choosing BhojanValley.');
@@ -848,11 +844,8 @@ window.handleAuth = function() {
         alert('Error placing order: ' + error.message);
     });
 
-                    })
-                    .catch(error => {
-                        alert('Error placing order: ' + error.message);
-                    });
-            };
+                       
+
         } catch (error) {
             console.error('Firebase initialization failed:', error);
             alert('Failed to initialize Firebase. Please check your configuration.');
