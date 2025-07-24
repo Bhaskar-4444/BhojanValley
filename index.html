@@ -170,6 +170,31 @@
             }
         }
     </style>
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDEO4lgBPbqm2au8jn42ZK-qQVehtcPNmg",
+    authDomain: "bhojanvalley-ce400.firebaseapp.com",
+    databaseURL: "https://bhojanvalley-ce400-default-rtdb.firebaseio.com",
+    projectId: "bhojanvalley-ce400",
+    storageBucket: "bhojanvalley-ce400.firebasestorage.app",
+    messagingSenderId: "834947885728",
+    appId: "1:834947885728:web:5b1f562dd0bc04f1cab7c5",
+    measurementId: "G-4PTSESNV53"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  window.saveOrderToFirebase = function (orderData) {
+    push(ref(db, 'orders'), orderData)
+      .then(() => alert("✅ Order sent to Firebase!"))
+      .catch((error) => alert("❌ Firebase Error: " + error.message));
+  };
+</script>
+
 </head>
 <body class="bg-green-100">
     <!-- Header -->
@@ -790,6 +815,8 @@ window.handleAuth = function() {
                     total: total,
                     status: 'Pending'
                 };
+                saveOrderToFirebase(orderData);
+
 
                 // Save to Firestore
                 addDoc(collection(db, 'orders'), orderData)
