@@ -817,39 +817,27 @@ window.handleAuth = function() {
                 };
                 saveOrderToFirebase(orderData);
 
+                
 
-                // Save to Firestore
+          // Save to Firestore
                 addDoc(collection(db, 'orders'), orderData)
                     .then(() => {
                         alert('Order placed successfully! Thank you for choosing BhojanValley.');
                         // Reset order
-                        addDoc(collection(db, 'orders'), orderData)
-    .then(() => {
-        alert('Order placed successfully! Thank you for choosing BhojanValley.');
-
-        // Reset item quantities in the order object
-        for (const itemId in order) {
-            order[itemId] = 0;
-            const quantitySpan = document.getElementById(`${itemId}-quantity`);
-            if (quantitySpan) {
-                quantitySpan.textContent = '0';
-            }
-        }
-
-        // Clear order summary manually
-        document.getElementById('order-details').innerHTML = '<p>No items selected.</p>';
-        document.getElementById('order-total').textContent = '0';
-    })
-    .catch(error => {
-        alert('Error placing order: ' + error.message);
-    });
-
-                       
-
+                        for (const itemId in order) {
+                            order[itemId] = 0;
+                            document.getElementById(`${itemId}-quantity`).textContent = 0;
+                        }
+                        updateOrderSummary();
+                    })
+                    .catch(error => {
+                        alert('Error placing order: ' + error.message);
+                    });
+            };
         } catch (error) {
             console.error('Firebase initialization failed:', error);
             alert('Failed to initialize Firebase. Please check your configuration.');
         }
     </script>
 </body>
-</html>
+</html>          
