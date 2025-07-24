@@ -537,23 +537,27 @@
     <!-- Firebase SDK -->
     <script type="module">
         // Import Firebase modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-        // Firebase Configuration (Replace with your Firebase project config)
+        // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyDEO4lgBPbqm2au8jn42ZK-qQVehtcPNmg",
+            authDomain: "bhojanvalley-ce400.firebaseapp.com",
+            databaseURL: "https://bhojanvalley-ce400-default-rtdb.firebaseio.com",
+            projectId: "bhojanvalley-ce400",
+            storageBucket: "bhojanvalley-ce400.firebasestorage.app",
+            messagingSenderId: "834947885728",
+            appId: "1:834947885728:web:5b1f562dd0bc04f1cab7c5",
+            measurementId: "G-4PTSESNV53"
         };
 
         // Initialize Firebase
         try {
             const app = initializeApp(firebaseConfig);
+            const analytics = getAnalytics(app);
             const auth = getAuth(app);
             const db = getFirestore(app);
 
