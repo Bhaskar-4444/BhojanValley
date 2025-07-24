@@ -611,6 +611,73 @@
             }
             updateOrderSummary();
         }
-    </script>
+   <!-- ✅ Firebase SDK scripts -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDEO4lgBPbqm2au8jn42ZK-qQVehtcPNmg",
+    authDomain: "bhojanvalley-ce400.firebaseapp.com",
+    databaseURL: "https://bhojanvalley-ce400-default-rtdb.firebaseio.com",
+    projectId: "bhojanvalley-ce400",
+    storageBucket: "bhojanvalley-ce400.appspot.com",
+    messagingSenderId: "834947885728",
+    appId: "1:834947885728:web:5b1f562dd0bc04f1cab7c5",
+    measurementId: "G-4PTSESNV53"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+
+  window.placeOrder = function () {
+    if (Object.values(order).every(quantity => quantity === 0)) {
+      alert('Please select at least one item to place an order.');
+      return;
+    }
+
+    const orderItems = [];
+    let total = 0;
+
+    for (const itemId in order) {
+      if (order[itemId] > 0) {
+        const formattedName = toTitleCase(itemId);
+        const itemElement = document.querySelector(`.menu-item[data-name="${formattedName}"]`);
+        if (itemElement) {
+          const itemName = itemElement.getAttribute('data-name');
+          const itemPrice = parseInt(itemElement.getAttribute('data-price'));
+          const quantity = order[itemId];
+          const itemTotal = itemPrice * quantity;
+          total += itemTotal;
+          orderItems.push({ name: itemName, quantity, price: itemPrice, total: itemTotal });
+        }
+      }
+    }
+
+    const orderData = {
+      id: Date.now(),
+      timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+      items: orderItems,
+      total: total,
+      status: 'Pending'
+    };
+
+    const orderRef = ref(database, 'orders');
+    push(orderRef, orderData)
+      .then(() => {
+        alert('Order placed successfully and sent to Firebase!');
+        for (const itemId in order) {
+          order[itemId] = 0;
+          document.getElementById(`${itemId}-quantity`).textContent = 0;
+        }
+        updateOrderSummary();
+      })
+      .catch((error) => {
+        console.error('Error saving to Firebase:', error);
+        alert('Failed to place order. Please try again.');
+      });
+  }
+</script>
+ </script>
 </body>
 </html>
