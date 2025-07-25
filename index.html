@@ -732,29 +732,7 @@ window.handleAuth = function() {
                 });
             };
 
-            // Quantity Controls and Order Summary
-            const order = {};
-
-            window.updateOrderSummary = function() {
-                const orderDetails = document.getElementById('order-details');
-                const orderTotal = document.getElementById('order-total');
-                let total = 0;
-                let detailsHTML = '';
-
-                for (const itemId in order) {
-                    if (order[itemId] > 0) {
-                        const formattedName = toTitleCase(itemId);
-                        const itemElement = document.querySelector(`.menu-item[data-name="${formattedName}"]`);
-                        if (itemElement) {
-                            const itemName = itemElement.getAttribute('data-name');
-                            const itemPrice = parseInt(itemElement.getAttribute('data-price'));
-                            const quantity = order[itemId];
-                            const itemTotal = itemPrice * quantity;
-                            total += itemTotal;
-                            detailsHTML += `<p>${itemName}: ${quantity} x ₹${itemPrice} = ₹${itemTotal}</p>`;
-                        } else {
-                            console.error(`Item not found: ${formattedName}`);
-                        }
+    
                     }
                 }
 
@@ -806,29 +784,6 @@ window.handleAuth = function() {
                         }
                     }
                 }
-
-
-                
-
-          // Save to Firestore
-                addDoc(collection(db, 'orders'), orderData)
-                    .then(() => {
-                        alert('Order placed successfully! Thank you for choosing BhojanValley.');
-                        // Reset order
-                        for (const itemId in order) {
-                            order[itemId] = 0;
-                            document.getElementById(`${itemId}-quantity`).textContent = 0;
-                        }
-                        updateOrderSummary();
-                    })
-                    .catch(error => {
-                        alert('Error placing order: ' + error.message);
-                    });
-            };
-        } catch (error) {
-            console.error('Firebase initialization failed:', error);
-            alert('Failed to initialize Firebase. Please check your configuration.');
-        }
     </script>
 </body>
 </html>          
