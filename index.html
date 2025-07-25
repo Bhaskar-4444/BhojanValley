@@ -140,6 +140,18 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin-bottom: 1rem;
         }
+        .refresh-button {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .refresh-button:hover {
+            background: #059669;
+        }
         @media (max-width: 640px) {
             .menu-item {
                 padding: 0.75rem;
@@ -175,30 +187,6 @@
             }
         }
     </style>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDEO4lgBPbqm2au8jn42ZK-qQVehtcPNmg",
-            authDomain: "bhojanvalley-ce400.firebaseapp.com",
-            databaseURL: "https://bhojanvalley-ce400-default-rtdb.firebaseio.com",
-            projectId: "bhojanvalley-ce400",
-            storageBucket: "bhojanvalley-ce400.firebasestorage.app",
-            messagingSenderId: "834947885728",
-            appId: "1:834947885728:web:5b1f562dd0bc04f1cab7c5",
-            measurementId: "G-4PTSESNV53"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        window.saveOrderToFirebase = function (orderData) {
-            push(ref(db, 'orders'), orderData)
-                .then(() => console.log("Order sent to Firebase"))
-                .catch((error) => alert("Firebase Error: " + error.message));
-        };
-    </script>
 </head>
 <body class="bg-green-100">
     <!-- Header -->
@@ -561,6 +549,7 @@
     <section id="order-history" class="py-16 bg-white" style="display: none;">
         <div class="container mx-auto px-4">
             <h2 class="text-3xl font-semibold text-green-700 mb-6 text-center">Your Order History</h2>
+            <button class="refresh-button" onclick="refreshOrderHistory()">Refresh Orders</button>
             <div id="order-history-list" class="max-w-3xl mx-auto"></div>
         </div>
     </section>
@@ -594,7 +583,6 @@
         const firebaseConfig = {
             apiKey: "AIzaSyDEO4lgBPbqm2au8jn42ZK-qQVehtcPNmg",
             authDomain: "bhojanvalley-ce400.firebaseapp.com",
-            databaseURL: "https://bhojanvalley-ce400-default-rtdb.firebaseio.com",
             projectId: "bhojanvalley-ce400",
             storageBucket: "bhojanvalley-ce400.firebasestorage.app",
             messagingSenderId: "834947885728",
@@ -612,27 +600,44 @@
             let isLoginMode = true;
             let unsubscribeOrders = null;
 
-            onAuthStateChanged(auth, user => {
-                const authButton = document.getElementById('auth-button');
-                const orderHistorySection = document.getElementById('order-history');
+            window.refreshOrderHistory = function() {
+                const user = auth.currentUser;
                 if (user) {
-                    authButton.textContent = 'Logout';
-                    authButton.onclick = () => signOut(auth);
-                    orderHistorySection.style.display = 'block';
+                    console.log('Refreshing order history for user:', user.uid);
                     if (unsubscribeOrders) unsubscribeOrders();
-                    const ordersQuery = query(
-                        collection(db, 'orders'),
-                        where('userId', '==', user.uid),
-                        orderBy('timestamp', 'desc')
-                    );
-                    unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
-                        const orderHistoryList = document.getElementById('order-history-list');
-                        let ordersHTML = '';
+                    setupOrderHistoryListener(user.uid);
+                } else {
+                    console.log('Cannot refresh orders: No user logged in');
+                    document.getElementById('order-history').style.display = 'none';
+                    document.getElementById('order-history-list').innerHTML = '<p>Please log in to view order history.</p>';
+                }
+            };
+
+            function setupOrderHistoryListener(userId) {
+                const ordersQuery = query(
+                    collection(db, 'orders'),
+                    where('userId', '==', userId),
+                    orderBy('timestamp', 'desc')
+                );
+                console.log('Setting up Firestore listener for user:', userId);
+                unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
+                    console.log('Firestore snapshot received, docs:', snapshot.size);
+                    const orderHistoryList = document.getElementById('order-history-list');
+                    if (!orderHistoryList) {
+                        console.error('Order history list element not found');
+                        return;
+                    }
+                    let ordersHTML = '';
+                    if (snapshot.empty) {
+                        console.log('No orders found for user:', userId);
+                        ordersHTML = '<p>No orders found.</p>';
+                    } else {
                         snapshot.forEach(doc => {
                             const order = doc.data();
-                            const itemsList = order.items.map(item => 
+                            console.log('Order data:', order);
+                            const itemsList = Array.isArray(order.items) ? order.items.map(item => 
                                 `<p>${item.name}: ${item.quantity} x ₹${item.price} = ₹${item.total}</p>`
-                            ).join('');
+                            ).join('') : '<p>No items in this order.</p>';
                             ordersHTML += `
                                 <div class="order-history-item">
                                     <h3 class="text-lg font-bold text-teal-600">Order at ${order.timestamp}</h3>
@@ -642,12 +647,25 @@
                                 </div>
                             `;
                         });
-                        orderHistoryList.innerHTML = ordersHTML || '<p>No orders found.</p>';
-                    }, (error) => {
-                        console.error('Error fetching orders:', error);
-                        alert('Error loading order history: ' + error.message);
-                    });
+                    }
+                    orderHistoryList.innerHTML = ordersHTML;
+                }, (error) => {
+                    console.error('Error fetching orders:', error);
+                    alert('Error loading order history: ' + error.message);
+                });
+            }
+
+            onAuthStateChanged(auth, user => {
+                const authButton = document.getElementById('auth-button');
+                const orderHistorySection = document.getElementById('order-history');
+                if (user) {
+                    console.log('User logged in:', user.uid);
+                    authButton.textContent = 'Logout';
+                    authButton.onclick = () => signOut(auth);
+                    orderHistorySection.style.display = 'block';
+                    setupOrderHistoryListener(user.uid);
                 } else {
+                    console.log('No user logged in');
                     authButton.textContent = 'Login';
                     authButton.onclick = toggleAuthModal;
                     orderHistorySection.style.display = 'none';
@@ -655,7 +673,7 @@
                         unsubscribeOrders();
                         unsubscribeOrders = null;
                     }
-                    document.getElementById('order-history-list').innerHTML = '';
+                    document.getElementById('order-history-list').innerHTML = '<p>Please log in to view order history.</p>';
                 }
             });
 
@@ -782,7 +800,6 @@
                         return;
                     }
                 }
-                // Simulate payment processing
                 placeOrder('Paid');
                 closePaymentModal();
             };
@@ -911,9 +928,10 @@
                     total: total,
                     status: status
                 };
-                saveOrderToFirebase(orderData);
+                console.log('Saving order to Firestore:', orderData);
                 addDoc(collection(db, 'orders'), orderData)
                     .then(() => {
+                        console.log('Order saved successfully');
                         alert(`Order placed successfully${status === 'Paid' ? ' and paid' : ''}! Thank you for choosing BhojanValley.`);
                         for (const itemId in order) {
                             order[itemId] = 0;
@@ -922,6 +940,7 @@
                         updateOrderSummary();
                     })
                     .catch(error => {
+                        console.error('Error saving order:', error);
                         alert('Error placing order: ' + error.message);
                     });
             };
