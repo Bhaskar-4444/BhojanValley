@@ -807,15 +807,6 @@ window.handleAuth = function() {
                     }
                 }
 
-                // Create order object
-                const orderData = {
-                    userId: user.uid,
-                    timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-                    items: orderItems,
-                    total: total,
-                    status: 'Pending'
-                };
-                saveOrderToFirebase(orderData);
 
                 
 
