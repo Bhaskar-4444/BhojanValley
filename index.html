@@ -170,9 +170,13 @@
             }
         }
     </style>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
         import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDEO4lgBPbqm2au8jn42ZK-qQVehtcPNmg",
@@ -187,12 +191,288 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const firestore = getFirestore(app);
+        const auth = getAuth(app);
+        const analytics = getAnalytics(app);
 
         window.saveOrderToFirebase = function (orderData) {
             push(ref(db, 'orders'), orderData)
-                .then(() => alert("✅ Order sent to Firebase!"))
+                .then(() => console.log("Order sent to Firebase Realtime Database!"))
                 .catch((error) => alert("❌ Firebase Error: " + error.message));
+            addDoc(collection(firestore, 'orders'), orderData)
+                .then(() => console.log("Order saved to Firestore!"))
+                .catch((error) => alert("❌ Firestore Error: " + error.message));
         };
+
+        // Authentication State Handling
+        let isLoginMode = true;
+
+        onAuthStateChanged(auth, user => {
+            const authButton = document.getElementById('auth-button');
+            const orderHistoryLink = document.getElementById('order-history-link');
+            if (user) {
+                authButton.textContent = 'Logout';
+                authButton.onclick = () => signOut(auth);
+                orderHistoryLink.style.display = 'block';
+            } else {
+                authButton.textContent = 'Login';
+                authButton.onclick = toggleAuthModal;
+                orderHistoryLink.style.display = 'none';
+                if (window.location.pathname.includes('order-history.html')) {
+                    window.location.href = 'index.html';
+                }
+            }
+        });
+
+        // Toggle Authentication Modal
+        window.toggleAuthModal = function() {
+            const modal = document.getElementById('auth-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+            document.getElementById('modal-title').textContent = isLoginMode ? 'Login' : 'Sign Up';
+        };
+
+        // Toggle between Login and Sign Up
+        window.toggleAuthMode = function() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('modal-title').textContent = isLoginMode ? 'Login' : 'Sign Up';
+        };
+
+        window.handleAuth = function() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            if (!email || !password) {
+                alert('Enter both email and password.');
+                return;
+            }
+            if (!email.includes('@') || !email.includes('.')) {
+                alert('Enter a valid email like test@example.com');
+                return;
+            }
+            if (password.length < 6) {
+                alert('Password must be 6 or more characters.');
+                return;
+            }
+            if (isLoginMode) {
+                signInWithEmailAndPassword(auth, email, password)
+                    .then(() => {
+                        toggleAuthModal();
+                        alert('Logged in!');
+                    })
+                    .catch(error => alert('Error: ' + error.message));
+            } else {
+                createUserWithEmailAndPassword(auth, email, password)
+                    .then(() => {
+                        toggleAuthModal();
+                        alert('Account created!');
+                    })
+                    .catch(error => alert('Error: ' + error.message));
+            }
+        };
+
+        // Payment Modal Toggle
+        window.togglePaymentModal = function() {
+            const modal = document.getElementById('payment-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        };
+
+        // Helper function to capitalize words for matching data-name
+        window.toTitleCase = function(str) {
+            return str
+                .replace(/-/g, ' ')
+                .toLowerCase()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        };
+
+        // Slider Functionality
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        window.showSlide = function(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === index) {
+                    slide.classList.add('active');
+                }
+            });
+        };
+
+        window.nextSlide = function() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            showSlide(currentSlide);
+        };
+
+        window.prevSlide = function() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(currentSlide);
+        };
+
+        setInterval(nextSlide, 5000);
+
+        // Menu Filter Functionality
+        window.filterMenu = function() {
+            const filter = document.getElementById('menu-filter').value;
+            const menuItems = document.querySelectorAll('.menu-item');
+
+            menuItems.forEach(item => {
+                item.classList.remove('active');
+                if (filter === 'all' || item.classList.contains(filter)) {
+                    item.classList.add('active');
+                }
+            });
+        };
+
+        // Quantity Controls and Order Summary
+        const order = {};
+
+        window.updateOrderSummary = function() {
+            const orderDetails = document.getElementById('order-details');
+            const orderTotal = document.getElementById('order-total');
+            let total = 0;
+            let detailsHTML = '';
+
+            for (const itemId in order) {
+                if (order[itemId] > 0) {
+                    const formattedName = toTitleCase(itemId);
+                    const itemElement = document.querySelector(`.menu-item[data-name="${formattedName}"]`);
+                    if (itemElement) {
+                        const itemName = itemElement.getAttribute('data-name');
+                        const itemPrice = parseInt(itemElement.getAttribute('data-price'));
+                        const quantity = order[itemId];
+                        const itemTotal = itemPrice * quantity;
+                        total += itemTotal;
+                        detailsHTML += `<p>${itemName}: ${quantity} x ₹${itemPrice} = ₹${itemTotal}</p>`;
+                    } else {
+                        console.error(`Item not found: ${formattedName}`);
+                    }
+                }
+            }
+
+            orderDetails.innerHTML = detailsHTML || '<p>No items selected.</p>';
+            orderTotal.textContent = total;
+            return total;
+        };
+
+        window.increaseQuantity = function(itemId) {
+            if (!order[itemId]) order[itemId] = 0;
+            order[itemId]++;
+            document.getElementById(`${itemId}-quantity`).textContent = order[itemId];
+            updateOrderSummary();
+        };
+
+        window.decreaseQuantity = function(itemId) {
+            if (!order[itemId] || order[itemId] <= 0) return;
+            order[itemId]--;
+            document.getElementById(`${itemId}-quantity`).textContent = order[itemId];
+            updateOrderSummary();
+        };
+
+        // Prepare order data
+        window.prepareOrderData = function() {
+            const user = auth.currentUser;
+            const orderItems = [];
+            let total = 0;
+            for (const itemId in order) {
+                if (order[itemId] > 0) {
+                    const formattedName = toTitleCase(itemId);
+                    const itemElement = document.querySelector(`.menu-item[data-name="${formattedName}"]`);
+                    if (itemElement) {
+                        const itemName = itemElement.getAttribute('data-name');
+                        const itemPrice = parseInt(itemElement.getAttribute('data-price'));
+                        const quantity = order[itemId];
+                        const itemTotal = itemPrice * quantity;
+                        total += itemTotal;
+                        orderItems.push({ name: itemName, quantity, price: itemPrice, total: itemTotal });
+                    }
+                }
+            }
+            return {
+                userId: user.uid,
+                timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+                items: orderItems,
+                total: total,
+                status: 'Pending'
+            };
+        };
+
+        // Handle Payment Selection
+        window.handlePaymentSelection = function(method, orderData) {
+            togglePaymentModal();
+            if (method === 'online') {
+                initiateOnlinePayment(orderData);
+            } else if (method === 'cod') {
+                orderData.paymentMethod = 'Cash on Delivery';
+                saveOrderToFirebase(orderData);
+                alert('Order placed successfully with Cash on Delivery! Thank you for choosing BhojanValley.');
+                resetOrder();
+            }
+        };
+
+        // Initiate Online Payment with Razorpay
+        window.initiateOnlinePayment = function(orderData) {
+            const options = {
+                key: 'rzp_test_YOUR_RAZORPAY_KEY_ID', // Replace with your Razorpay Key ID
+                amount: orderData.total * 100, // Amount in paise
+                currency: 'INR',
+                name: 'BhojanValley',
+                description: 'Order Payment',
+                handler: function(response) {
+                    orderData.paymentMethod = 'Online';
+                    orderData.paymentId = response.razorpay_payment_id;
+                    saveOrderToFirebase(orderData);
+                    alert('Payment successful! Order placed. Thank you for choosing BhojanValley.');
+                    resetOrder();
+                },
+                prefill: {
+                    email: auth.currentUser.email,
+                    contact: '9508331748' // Replace with user's contact if available
+                },
+                theme: {
+                    color: '#10b981'
+                }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
+            rzp.on('payment.failed', function(response) {
+                alert('Payment failed: ' + response.error.description);
+            });
+        };
+
+        // Reset Order
+        window.resetOrder = function() {
+            for (const itemId in order) {
+                order[itemId] = 0;
+                document.getElementById(`${itemId}-quantity`).textContent = 0;
+            }
+            updateOrderSummary();
+        };
+
+        // Place Order
+        window.placeOrder = function() {
+            const user = auth.currentUser;
+            if (!user) {
+                alert('Please log in to place an order.');
+                toggleAuthModal();
+                return;
+            }
+
+            if (Object.values(order).every(quantity => quantity === 0)) {
+                alert('Please select at least one item to place an order.');
+                return;
+            }
+
+            const orderData = prepareOrderData();
+            togglePaymentModal();
+        };
+
+        try {
+            // Initialize Firebase and other functionalities
+        } catch (error) {
+            console.error('Firebase initialization failed:', error);
+            alert('Failed to initialize Firebase. Please check your configuration.');
+        }
     </script>
 </head>
 <body class="bg-green-100">
@@ -222,6 +502,16 @@
             <button onclick="handleAuth()">Login</button>
             <button onclick="toggleAuthMode()">Switch to Sign Up</button>
             <button onclick="toggleAuthModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold text-teal-600 mb-4">Select Payment Method</h2>
+            <button onclick="handlePaymentSelection('online', prepareOrderData())">Pay Online</button>
+            <button onclick="handlePaymentSelection('cod', prepareOrderData())">Cash on Delivery</button>
+            <button onclick="togglePaymentModal()">Cancel</button>
         </div>
     </div>
 
@@ -266,7 +556,7 @@
             <div class="menu-grid grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Veg Items -->
                 <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="250" data-name="Paneer Butter Masala">
-                    <img src="https://images.pexels.com/photos/2347311/pexels-photo-2347311.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Paneer Butter Butter Masala" class="menu-img">
+                    <img src="https://images.pexels.com/photos/2347311/pexels-photo-2347311.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Paneer Butter Masala" class="menu-img">
                     <h3 class="text-xl font-bold text-teal-600">Paneer Butter Masala</h3>
                     <p class="text-gray-600">Creamy paneer in rich tomato and butter gravy.</p>
                     <p class="text-green-600 font-semibold">₹250</p>
@@ -549,253 +839,5 @@
             <p>© 2025 BhojanValley. All rights reserved.</p>
         </div>
     </footer>
-
-    <!-- Firebase SDK -->
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
-        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDEO4lgBPbqm2au8jn42ZK-qQVehtcPNmg",
-            authDomain: "bhojanvalley-ce400.firebaseapp.com",
-            databaseURL: "https://bhojanvalley-ce400-default-rtdb.firebaseio.com",
-            projectId: "bhojanvalley-ce400",
-            storageBucket: "bhojanvalley-ce400.firebasestorage.app",
-            messagingSenderId: "834947885728",
-            appId: "1:834947885728:web:5b1f562dd0bc04f1cab7c5",
-            measurementId: "G-4PTSESNV53"
-        };
-
-        // Initialize Firebase
-        try {
-            const app = initializeApp(firebaseConfig);
-            const analytics = getAnalytics(app);
-            const auth = getAuth(app);
-            const db = getFirestore(app);
-
-            // Authentication State Handling
-            let isLoginMode = true;
-
-            onAuthStateChanged(auth, user => {
-                const authButton = document.getElementById('auth-button');
-                const orderHistoryLink = document.getElementById('order-history-link');
-                if (user) {
-                    authButton.textContent = 'Logout';
-                    authButton.onclick = () => signOut(auth);
-                    orderHistoryLink.style.display = 'block'; // Show the link
-                } else {
-                    authButton.textContent = 'Login';
-                    authButton.onclick = toggleAuthModal;
-                    orderHistoryLink.style.display = 'none'; // Hide the link
-                    if (window.location.pathname.includes('order-history.html')) {
-                        window.location.href = 'index.html';
-                    }
-                }
-            });
-
-            // Toggle Authentication Modal
-            window.toggleAuthModal = function() {
-                const modal = document.getElementById('auth-modal');
-                modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-                document.getElementById('modal-title').textContent = isLoginMode ? 'Login' : 'Sign Up';
-            };
-
-            // Toggle between Login and Sign Up
-            window.toggleAuthMode = function() {
-                isLoginMode = !isLoginMode;
-                document.getElementById('modal-title').textContent = isLoginMode ? 'Login' : 'Sign Up';
-            };
-
-            window.handleAuth = function() {
-                const email = document.getElementById('email').value.trim();
-                const password = document.getElementById('password').value;
-                if (!email || !password) {
-                    alert('Enter both email and password.');
-                    return;
-                }
-                if (!email.includes('@') || !email.includes('.')) {
-                    alert('Enter a valid email like test@example.com');
-                    return;
-                }
-                if (password.length < 6) {
-                    alert('Password must be 6 or more characters.');
-                    return;
-                }
-                if (isLoginMode) {
-                    signInWithEmailAndPassword(auth, email, password)
-                        .then(() => {
-                            toggleAuthModal();
-                            alert('Logged in!');
-                        })
-                        .catch(error => alert('Error: ' + error.message));
-                } else {
-                    createUserWithEmailAndPassword(auth, email, password)
-                        .then(() => {
-                            toggleAuthModal();
-                            alert('Account created!');
-                        })
-                        .catch(error => alert('Error: ' + error.message));
-                }
-            };
-
-            // Helper function to capitalize words for matching data-name
-            window.toTitleCase = function(str) {
-                return str
-                    .replace(/-/g, ' ')
-                    .toLowerCase()
-                    .split(' ')
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(' ');
-            };
-
-            // Slider Functionality
-            let currentSlide = 0;
-            const slides = document.querySelectorAll('.slide');
-            const totalSlides = slides.length;
-
-            window.showSlide = function(index) {
-                slides.forEach((slide, i) => {
-                    slide.classList.remove('active');
-                    if (i === index) {
-                        slide.classList.add('active');
-                    }
-                });
-            };
-
-            window.nextSlide = function() {
-                currentSlide = (currentSlide + 1) % totalSlides;
-                showSlide(currentSlide);
-            };
-
-            window.prevSlide = function() {
-                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-                showSlide(currentSlide);
-            };
-
-            // Auto-slide every 5 seconds
-            setInterval(nextSlide, 5000);
-
-            // Menu Filter Functionality
-            window.filterMenu = function() {
-                const filter = document.getElementById('menu-filter').value;
-                const menuItems = document.querySelectorAll('.menu-item');
-
-                menuItems.forEach(item => {
-                    item.classList.remove('active');
-                    if (filter === 'all' || item.classList.contains(filter)) {
-                        item.classList.add('active');
-                    }
-                });
-            };
-
-            // Quantity Controls and Order Summary
-            const order = {};
-
-            window.updateOrderSummary = function() {
-                const orderDetails = document.getElementById('order-details');
-                const orderTotal = document.getElementById('order-total');
-                let total = 0;
-                let detailsHTML = '';
-
-                for (const itemId in order) {
-                    if (order[itemId] > 0) {
-                        const formattedName = toTitleCase(itemId);
-                        const itemElement = document.querySelector(`.menu-item[data-name="${formattedName}"]`);
-                        if (itemElement) {
-                            const itemName = itemElement.getAttribute('data-name');
-                            const itemPrice = parseInt(itemElement.getAttribute('data-price'));
-                            const quantity = order[itemId];
-                            const itemTotal = itemPrice * quantity;
-                            total += itemTotal;
-                            detailsHTML += `<p>${itemName}: ${quantity} x ₹${itemPrice} = ₹${itemTotal}</p>`;
-                        } else {
-                            console.error(`Item not found: ${formattedName}`);
-                        }
-                    }
-                }
-
-                orderDetails.innerHTML = detailsHTML || '<p>No items selected.</p>';
-                orderTotal.textContent = total;
-            };
-
-            window.increaseQuantity = function(itemId) {
-                if (!order[itemId]) order[itemId] = 0;
-                order[itemId]++;
-                document.getElementById(`${itemId}-quantity`).textContent = order[itemId];
-                updateOrderSummary();
-            };
-
-            window.decreaseQuantity = function(itemId) {
-                if (!order[itemId] || order[itemId] <= 0) return;
-                order[itemId]--;
-                document.getElementById(`${itemId}-quantity`).textContent = order[itemId];
-                updateOrderSummary();
-            };
-
-            window.placeOrder = function() {
-                const user = auth.currentUser;
-                if (!user) {
-                    alert('Please log in to place an order.');
-                    toggleAuthModal();
-                    return;
-                }
-
-                if (Object.values(order).every(quantity => quantity === 0)) {
-                    alert('Please select at least one item to place an order.');
-                    return;
-                }
-
-                // Prepare order data
-                const orderItems = [];
-                let total = 0;
-                for (const itemId in order) {
-                    if (order[itemId] > 0) {
-                        const formattedName = toTitleCase(itemId);
-                        const itemElement = document.querySelector(`.menu-item[data-name="${formattedName}"]`);
-                        if (itemElement) {
-                            const itemName = itemElement.getAttribute('data-name');
-                            const itemPrice = parseInt(itemElement.getAttribute('data-price'));
-                            const quantity = order[itemId];
-                            const itemTotal = itemPrice * quantity;
-                            total += itemTotal;
-                            orderItems.push({ name: itemName, quantity, price: itemPrice, total: itemTotal });
-                        }
-                    }
-                }
-
-                // Create order object
-                const orderData = {
-                    userId: user.uid,
-                    timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-                    items: orderItems,
-                    total: total,
-                    status: 'Pending'
-                };
-                saveOrderToFirebase(orderData);
-
-                // Save to Firestore
-                addDoc(collection(db, 'orders'), orderData)
-                    .then(() => {
-                        alert('Order placed successfully! Thank you for choosing BhojanValley.');
-                        // Reset order
-                        for (const itemId in order) {
-                            order[itemId] = 0;
-                            document.getElementById(`${itemId}-quantity`).textContent = 0;
-                        }
-                        updateOrderSummary();
-                    })
-                    .catch(error => {
-                        alert('Error placing order: ' + error.message);
-                    });
-            };
-        } catch (error) {
-            console.error('Firebase initialization failed:', error);
-            alert('Failed to initialize Firebase. Please check your configuration.');
-        }
-    </script>
 </body>
 </html>
