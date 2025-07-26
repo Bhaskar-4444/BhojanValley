@@ -6,7 +6,7 @@
     <title>BhojanValley Restaurant</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
- <style>
+    <style>
         body {
             font-family: 'Poppins', sans-serif;
         }
@@ -73,6 +73,26 @@
         .quantity-controls button:hover {
             background: #059669;
         }
+        .order-summary {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .order-summary button {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .order-summary button:hover {
+            background: #059669;
+        }
         .modal {
             display: none;
             position: fixed;
@@ -112,6 +132,13 @@
         .modal-content button:hover {
             background: #059669;
         }
+        .order-history-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
         @media (max-width: 640px) {
             .menu-item {
                 padding: 0.75rem;
@@ -144,30 +171,29 @@
         }
     </style>
     <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDEO4lgBPbqm2au8jn42ZK-qQVehtcPNmg",
-    authDomain: "bhojanvalley-ce400.firebaseapp.com",
-    databaseURL: "https://bhojanvalley-ce400-default-rtdb.firebaseio.com",
-    projectId: "bhojanvalley-ce400",
-    storageBucket: "bhojanvalley-ce400.firebasestorage.app",
-    messagingSenderId: "834947885728",
-    appId: "1:834947885728:web:5b1f562dd0bc04f1cab7c5",
-    measurementId: "G-4PTSESNV53"
-  };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEO4lgBPbqm2au8jn42ZK-qQVehtcPNmg",
+            authDomain: "bhojanvalley-ce400.firebaseapp.com",
+            databaseURL: "https://bhojanvalley-ce400-default-rtdb.firebaseio.com",
+            projectId: "bhojanvalley-ce400",
+            storageBucket: "bhojanvalley-ce400.firebasestorage.app",
+            messagingSenderId: "834947885728",
+            appId: "1:834947885728:web:5b1f562dd0bc04f1cab7c5",
+            measurementId: "G-4PTSESNV53"
+        };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-  window.saveOrderToFirebase = function (orderData) {
-    push(ref(db, 'orders'), orderData)
-      .then(() => alert("✅ Order sent to Firebase!"))
-      .catch((error) => alert("❌ Firebase Error: " + error.message));
-  };
-</script>
-
+        window.saveOrderToFirebase = function (orderData) {
+            push(ref(db, 'orders'), orderData)
+                .then(() => alert("✅ Order sent to Firebase!"))
+                .catch((error) => alert("❌ Firebase Error: " + error.message));
+        };
+    </script>
 </head>
 <body class="bg-green-100">
     <!-- Header -->
@@ -179,7 +205,7 @@
                     <li><a href="#home" class="hover:text-yellow-300">Home</a></li>
                     <li><a href="#about" class="hover:text-yellow-300">About</a></li>
                     <li><a href="#menu" class="hover:text-yellow-300">Menu</a></li>
-                    <li><a href="#order-history" class="hover:text-yellow-300">Order History</a></li>
+                    <li><a href="order-history.html" id="order-history-link" class="hover:text-yellow-300">Order History</a></li>
                     <li><a href="#contact" class="hover:text-yellow-300">Contact</a></li>
                     <li><button id="auth-button" onclick="toggleAuthModal()" class="hover:text-yellow-300">Login</button></li>
                 </ul>
@@ -240,7 +266,7 @@
             <div class="menu-grid grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Veg Items -->
                 <div class="menu-item veg active bg-white p-6 rounded-lg shadow-md" data-price="250" data-name="Paneer Butter Masala">
-                    <img src="https://images.pexels.com/photos/2347311/pexels-photo-2347311.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Paneer Butter Masala" class="menu-img">
+                    <img src="https://images.pexels.com/photos/2347311/pexels-photo-2347311.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Paneer Butter Butter Masala" class="menu-img">
                     <h3 class="text-xl font-bold text-teal-600">Paneer Butter Masala</h3>
                     <p class="text-gray-600">Creamy paneer in rich tomato and butter gravy.</p>
                     <p class="text-green-600 font-semibold">₹250</p>
@@ -495,6 +521,16 @@
                     </div>
                 </div>
             </div>
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h3 class="text-xl font-bold text-teal-600 mb-4">Order Summary</h3>
+                <div id="order-details"></div>
+                <p class="text-lg font-semibold text-green-600 mt-4">Total: ₹<span id="order-total">0</span></p>
+                <button onclick="placeOrder()">Place Order</button>
+            </div>
+        </div>
+    </section>
+
     <!-- Contact Section -->
     <section id="contact" class="py-16 bg-white">
         <div class="container mx-auto px-4">
@@ -520,7 +556,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -543,53 +579,21 @@
 
             // Authentication State Handling
             let isLoginMode = true;
-            let unsubscribeOrders = null;
 
             onAuthStateChanged(auth, user => {
                 const authButton = document.getElementById('auth-button');
-                const orderHistorySection = document.getElementById('order-history');
+                const orderHistoryLink = document.getElementById('order-history-link');
                 if (user) {
                     authButton.textContent = 'Logout';
                     authButton.onclick = () => signOut(auth);
-                    orderHistorySection.style.display = 'block';
-                    // Start real-time listener for user orders
-                    if (unsubscribeOrders) unsubscribeOrders(); // Unsubscribe previous listener
-                    const ordersQuery = query(
-                        collection(db, 'orders'),
-                        where('userId', '==', user.uid),
-                        orderBy('timestamp', 'desc')
-                    );
-                    unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
-                        const orderHistoryList = document.getElementById('order-history-list');
-                        let ordersHTML = '';
-                        snapshot.forEach(doc => {
-                            const order = doc.data();
-                            const itemsList = order.items.map(item => 
-                                `<p>${item.name}: ${item.quantity} x ₹${item.price} = ₹${item.total}</p>`
-                            ).join('');
-                            ordersHTML += `
-                                <div class="order-history-item">
-                                    <h3 class="text-lg font-bold text-teal-600">Order at ${order.timestamp}</h3>
-                                    ${itemsList}
-                                    <p class="text-green-600 font-semibold">Total: ₹${order.total}</p>
-                                    <p class="text-gray-600">Status: ${order.status}</p>
-                                </div>
-                            `;
-                        });
-                        orderHistoryList.innerHTML = ordersHTML || '<p>No orders found.</p>';
-                    }, (error) => {
-                        console.error('Error fetching orders:', error);
-                        alert('Error loading order history: ' + error.message);
-                    });
+                    orderHistoryLink.style.display = 'block'; // Show the link
                 } else {
                     authButton.textContent = 'Login';
                     authButton.onclick = toggleAuthModal;
-                    orderHistorySection.style.display = 'none';
-                    if (unsubscribeOrders) {
-                        unsubscribeOrders();
-                        unsubscribeOrders = null;
+                    orderHistoryLink.style.display = 'none'; // Hide the link
+                    if (window.location.pathname.includes('order-history.html')) {
+                        window.location.href = 'index.html';
                     }
-                    document.getElementById('order-history-list').innerHTML = '';
                 }
             });
 
@@ -605,37 +609,38 @@
                 isLoginMode = !isLoginMode;
                 document.getElementById('modal-title').textContent = isLoginMode ? 'Login' : 'Sign Up';
             };
-window.handleAuth = function() {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    if (!email || !password) {
-        alert('Enter both email and password.');
-        return;
-    }
-    if (!email.includes('@') || !email.includes('.')) {
-        alert('Enter a valid email like test@example.com');
-        return;
-    }
-    if (password.length < 6) {
-        alert('Password must be 6 or more characters.');
-        return;
-    }
-    if (isLoginMode) {
-        signInWithEmailAndPassword(auth, email, password)
-            .then(() => {
-                toggleAuthModal();
-                alert('Logged in!');
-            })
-            .catch(error => alert('Error: ' + error.message));
-    } else {
-        createUserWithEmailAndPassword(auth, email, password)
-            .then(() => {
-                toggleAuthModal();
-                alert('Account created!');
-            })
-            .catch(error => alert('Error: ' + error.message));
-    }
-};
+
+            window.handleAuth = function() {
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                if (!email || !password) {
+                    alert('Enter both email and password.');
+                    return;
+                }
+                if (!email.includes('@') || !email.includes('.')) {
+                    alert('Enter a valid email like test@example.com');
+                    return;
+                }
+                if (password.length < 6) {
+                    alert('Password must be 6 or more characters.');
+                    return;
+                }
+                if (isLoginMode) {
+                    signInWithEmailAndPassword(auth, email, password)
+                        .then(() => {
+                            toggleAuthModal();
+                            alert('Logged in!');
+                        })
+                        .catch(error => alert('Error: ' + error.message));
+                } else {
+                    createUserWithEmailAndPassword(auth, email, password)
+                        .then(() => {
+                            toggleAuthModal();
+                            alert('Account created!');
+                        })
+                        .catch(error => alert('Error: ' + error.message));
+                }
+            };
 
             // Helper function to capitalize words for matching data-name
             window.toTitleCase = function(str) {
@@ -772,9 +777,7 @@ window.handleAuth = function() {
                 };
                 saveOrderToFirebase(orderData);
 
-                
-
-          // Save to Firestore
+                // Save to Firestore
                 addDoc(collection(db, 'orders'), orderData)
                     .then(() => {
                         alert('Order placed successfully! Thank you for choosing BhojanValley.');
@@ -795,4 +798,4 @@ window.handleAuth = function() {
         }
     </script>
 </body>
-</html>          
+</html>
