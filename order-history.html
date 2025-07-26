@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BhojanValley - Order History</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f0fff4;
+        }
+        .order-history-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+        .back-button {
+            background: #10b981;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        .back-button:hover {
+            background: #059669;
+        }
+        @media (max-width: 640px) {
+            .order-history-item {
+                padding: 0.75rem;
+            }
+            .order-history-item h3 {
+                font-size: 0.9rem;
+            }
+            .order-history-item p {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="bg-gradient-to-r from-green-600 to-teal-500 text-white py-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <h1 class="text-3xl font-bold">BhojanValley</h1>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="index.html" class="hover:text-yellow-300">Back to Home</a></li>
+                    <li><button id="auth-button" class="hover:text-yellow-300">Login</button></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="py-16">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-semibold text-green-700 mb-6 text-center">Your Order History</h2>
+            <button onclick="window.location.href='index.html'" class="back-button">Back to Menu</button>
+            <div id="order-history-list" class="max-w-3xl mx-auto"></div>
+        </div>
+    </section>
+
+    <footer class="bg-gradient-to-r from-green-600 to-teal-500 text-white py-4">
+        <div class="container mx-auto text-center">
+            <p>© 2025 BhojanValley. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEO4lgBPbqm2au8jn42ZK-qQVehtcPNmg",
+            authDomain: "bhojanvalley-ce400.firebaseapp.com",
+            databaseURL: "https://bhojanvalley-ce400-default-rtdb.firebaseio.com",
+            projectId: "bhojanvalley-ce400",
+            storageBucket: "bhojanvalley-ce400.firebasestorage.app",
+            messagingSenderId: "834947885728",
+            appId: "1:834947885728:web:5b1f562dd0bc04f1cab7c5",
+            measurementId: "G-4PTSESNV53"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Authentication State Handling
+        let unsubscribeOrders = null;
+
+        onAuthStateChanged(auth, user => {
+            const authButton = document.getElementById('auth-button');
+            const orderHistoryList = document.getElementById('order-history-list');
+            if (user) {
+                authButton.textContent = 'Logout';
+                authButton.onclick = () => signOut(auth).then(() => window.location.href = 'index.html');
+                // Start real-time listener for user orders
+                if (unsubscribeOrders) unsubscribeOrders(); // Unsubscribe previous listener
+                const ordersQuery = query(
+                    collection(db, 'orders'),
+                    where('userId', '==', user.uid),
+                    orderBy('timestamp', 'desc')
+                );
+                unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
+                    let ordersHTML = '';
+                    snapshot.forEach(doc => {
+                        const order = doc.data();
+                        const itemsList = order.items.map(item => 
+                            `<p>${item.name}: ${item.quantity} x ₹${item.price} = ₹${item.total}</p>`
+                        ).join('');
+                        ordersHTML += `
+                            <div class="order-history-item">
+                                <h3 class="text-lg font-bold text-teal-600">Order at ${order.timestamp}</h3>
+                                ${itemsList}
+                                <p class="text-green-600 font-semibold">Total: ₹${order.total}</p>
+                                <p class="text-gray-600">Status: ${order.status}</p>
+                            </div>
+                        `;
+                    });
+                    orderHistoryList.innerHTML = ordersHTML || '<p>No orders found.</p>';
+                }, (error) => {
+                    console.error('Error fetching orders:', error);
+                    alert('Error loading order history: ' + error.message);
+                });
+            } else {
+                authButton.textContent = 'Login';
+                authButton.onclick = () => window.location.href = 'index.html#login';
+                orderHistoryList.innerHTML = '<p>Please log in to view your order history.</p>';
+                if (unsubscribeOrders) {
+                    unsubscribeOrders();
+                    unsubscribeOrders = null;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
