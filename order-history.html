@@ -102,7 +102,7 @@
             if (user) {
                 authButton.textContent = 'Logout';
                 authButton.onclick = () => signOut(auth).then(() => window.location.href = 'index.html');
-                // Start real-time listener for user orders
+                // Fetch and display all orders for the user
                 if (unsubscribeOrders) unsubscribeOrders(); // Unsubscribe previous listener
                 const ordersQuery = query(
                     collection(db, 'orders'),
@@ -121,14 +121,14 @@
                                 <h3 class="text-lg font-bold text-teal-600">Order at ${order.timestamp}</h3>
                                 ${itemsList}
                                 <p class="text-green-600 font-semibold">Total: ₹${order.total}</p>
-                                <p class="text-gray-600">Status: ${order.status}</p>
+                                <p class="text-gray-600">Status: ${order.status || 'Pending'}</p>
                             </div>
                         `;
                     });
                     orderHistoryList.innerHTML = ordersHTML || '<p>No orders found.</p>';
                 }, (error) => {
                     console.error('Error fetching orders:', error);
-                    alert('Error loading order history: ' + error.message);
+                    orderHistoryList.innerHTML = `<p>Error loading orders: ${error.message}</p>`;
                 });
             } else {
                 authButton.textContent = 'Login';
